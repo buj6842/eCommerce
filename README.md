@@ -31,6 +31,7 @@ gantt
 3주간의 일정을 어느정도 작성했으며
 
 해당 프로젝트를 설계하며 작성한 Sequence Diagram은 다음과 같습니다.
+(파일별로도 분류를 해두었습니다)
 
 ```mermaid
 sequenceDiagram
@@ -73,6 +74,7 @@ sequenceDiagram
         Point --> Product : 잔액이 충분한 경우 상품 재고 확인
         alt 상품 재고가 충분할 경우
             Product --> Order : 상품 재고 확인 후 상품 주문 요청 (상품ID, 주문수량, 상품가격, 주문일자 정보 저장)
+            Order --> Point : 주문 정보 저장 후 사용자의 잔액 갱신
             Order --> Data_PlatForm : 주문 정보 외부 데이터 플랫폼에 저장
         else 상품 재고가 부족한 경우
             Product --> User : 재고 부족으로 인한 실패 응답과 메세지 전달
@@ -91,3 +93,82 @@ sequenceDiagram
     User --> Cart : 장바구니 추가/삭제 기능 요청 (상품ID, 상품 수량)
     Cart --> User : 장바구니에 상품 추가/삭제 완료 응답
 ```
+
+ERD는 다음과 같습니다.
+연관관계를 피하기 위해 다음과 같이 설계하였습니다.
+```mermaid
+erDiagram
+    USER { 
+        Long userId PK
+        String username
+        Double balance
+    }
+
+    POINT {
+        Long pointId PK
+        Long userId
+        Integer amount
+        Date updateDate
+    }
+
+    PRODUCT {
+        Long productId PK
+        String productName
+        Integer price
+        Integer productQuantity
+    }
+
+    ORDER {
+        Long orderId PK
+        Long userId
+        Date orderDate
+        Double totalAmount
+    }
+
+    ORDER_ITEM {
+        Long orderItemId PK
+        Long orderId
+        Long productId
+        Integer quantity
+        Integer price
+    }
+
+    CART_ITEM {
+        Long cartItemId PK
+        Long cartId
+        Long userId
+        Long productId
+        Integer quantity
+    }
+```
+
+우선적으로 패키지 구조는
+
+├── application
+│ └── dto
+│     ├── CartRequest.java
+│     ├── OrderItemDTO.java
+│     ├── OrderRequest.java
+│     ├── PointChargeRequest.java
+│     └── ProductDto.java
+├── controller
+│ ├── CartController.java
+│ ├── OrderController.java
+│ ├── ProductController.java
+│ └── UserController.java
+├── domain
+├── infrastructure
+└── structure.txt
+
+형식으로 잡게되어 있습니다.
+Split by Layer, Package by Feature 원칙으로 패키지를 구성하여 채워나갈 예정입니다.
+
+기술 스택은 다음과 같습니다.
+- Spring Boot
+- JPA
+- MYSQL(사용 예정)
+- Gradle
+- Junit5
+- Mockito
+- Swagger
+- Kafka(사용 예정)
