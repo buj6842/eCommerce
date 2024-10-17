@@ -11,9 +11,9 @@ public class UserController {
 
 
     @GetMapping("/{userId}/point")
-    public ResponseEntity<Double> getPoint(@PathVariable Long userId) {
+    public ResponseEntity<Integer> getPoint(@PathVariable Long userId) {
         // 포인트 조회 로직
-        return ResponseEntity.ok(1000.0);
+        return ResponseEntity.ok(10000);
     }
 
     @PostMapping("/point/charge")
