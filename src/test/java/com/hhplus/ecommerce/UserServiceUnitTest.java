@@ -58,4 +58,5 @@ public class UserServiceUnitTest {
         //실행과 동시에 예외 발생인지 확인
         assertThrows(RuntimeException.class, () -> userService.validatePoint(orderRequest));
     }
+
 }
