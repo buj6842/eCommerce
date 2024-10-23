@@ -1,10 +1,10 @@
-package com.hhplus.ecommerce;
+package com.hhplus.ecommerce.unit;
 
 import com.hhplus.ecommerce.application.dto.OrderItemDTO;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.ProductDto;
 import com.hhplus.ecommerce.application.service.ProductService;
-import com.hhplus.ecommerce.domain.Product;
+import com.hhplus.ecommerce.domain.product.Product;
 import com.hhplus.ecommerce.infrastructure.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

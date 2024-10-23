@@ -4,6 +4,7 @@ import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.ProductDto;
 import com.hhplus.ecommerce.application.mapper.ProductMapper;
 import com.hhplus.ecommerce.infrastructure.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +17,14 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
 
+    @Transactional
     public List<ProductDto> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(ProductMapper::toProductDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void validateProduct(OrderRequest orderRequest) {
         orderRequest.orderItems().forEach(orderItem -> {
             if (productRepository.findById(orderItem.productId())

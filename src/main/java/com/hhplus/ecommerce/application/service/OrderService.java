@@ -1,11 +1,11 @@
 package com.hhplus.ecommerce.application.service;
 
-import com.hhplus.ecommerce.application.dto.OrderItemDTO;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
-import com.hhplus.ecommerce.domain.Order;
-import com.hhplus.ecommerce.domain.OrderItem;
+import com.hhplus.ecommerce.domain.order.Order;
+import com.hhplus.ecommerce.domain.order.OrderItem;
 import com.hhplus.ecommerce.infrastructure.OrderItemRepository;
 import com.hhplus.ecommerce.infrastructure.OrderRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +20,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
 
     // 주문처리
+    @Transactional
     public void orderProduct(OrderRequest orderRequest) {
         Integer totalPrice = orderRequest.orderItems().stream()
                 .mapToInt(orderItem -> orderItem.price() * orderItem.quantity())
@@ -31,14 +32,10 @@ public class OrderService {
                 .totalPrice(totalPrice)
                 .build();
 
-        order = orderRepository.save(order);
-
-        // 주문상품 처리
-        // OrderItems 생성 및 저장
-        Order saveOrder = order;
+        Order saveOrder = orderRepository.save(order);
         List<OrderItem> orderItems = orderRequest.orderItems().stream()
                 .map(orderItemDTO -> OrderItem.builder()
-                        .order(saveOrder)
+                        .orderId(saveOrder.getOrderId())
                         .productId(orderItemDTO.productId())
                         .quantity(orderItemDTO.quantity())
                         .price(orderItemDTO.price())

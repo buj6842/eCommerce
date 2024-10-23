@@ -1,4 +1,4 @@
-package com.hhplus.ecommerce;
+package com.hhplus.ecommerce.inter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplus.ecommerce.application.dto.OrderItemDTO;

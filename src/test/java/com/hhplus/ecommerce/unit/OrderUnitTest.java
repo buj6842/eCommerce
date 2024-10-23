@@ -1,10 +1,9 @@
-package com.hhplus.ecommerce;
+package com.hhplus.ecommerce.unit;
 
 import com.hhplus.ecommerce.application.dto.OrderItemDTO;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.service.OrderService;
-import com.hhplus.ecommerce.domain.Order;
-import com.hhplus.ecommerce.domain.OrderItem;
+import com.hhplus.ecommerce.domain.order.Order;
 import com.hhplus.ecommerce.infrastructure.OrderItemRepository;
 import com.hhplus.ecommerce.infrastructure.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +35,7 @@ public class OrderUnitTest {
     @BeforeEach
     void setUp() {
         // Mock 데이터를 미리 설정
-        order = new Order(1L, 1L, LocalDateTime.now(), 100, List.of(new OrderItem(1L, order, 1L, 1, 100)));
+        order = new Order(1L, 1L, LocalDateTime.now(), 100);
     }
 
     @Test
