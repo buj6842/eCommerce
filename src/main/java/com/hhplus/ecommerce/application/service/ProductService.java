@@ -2,7 +2,11 @@ package com.hhplus.ecommerce.application.service;
 
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.ProductDto;
+import com.hhplus.ecommerce.application.dto.TopOrderProduct;
 import com.hhplus.ecommerce.application.mapper.ProductMapper;
+import com.hhplus.ecommerce.config.exception.EcommerceException;
+import com.hhplus.ecommerce.config.exception.ErrorCode;
+import com.hhplus.ecommerce.domain.order.OrderItem;
 import com.hhplus.ecommerce.infrastructure.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +34,22 @@ public class ProductService {
             if (productRepository.findById(orderItem.productId())
                     .map(product -> product.getProductQuantity() < orderItem.quantity())
                     .orElse(true)) {
-                throw new RuntimeException("재고가 부족합니다.");
+                throw new EcommerceException(ErrorCode.NOT_ENOUGH_PRODUCT_QUANTITY.getCode(), ErrorCode.NOT_ENOUGH_PRODUCT_QUANTITY.getMessage());
             }
         });
     }
+
+    @Transactional
+    public void modifyProductQuantity(List<OrderItem> orderItems) {
+        orderItems.forEach(orderItem -> {
+            productRepository.findById(orderItem.getProductId())
+                    .ifPresent(product -> {
+                        product.minusQuantity(orderItem.getQuantity());
+                        productRepository.save(product);
+                    });
+        });
+    }
+
+
+
 }

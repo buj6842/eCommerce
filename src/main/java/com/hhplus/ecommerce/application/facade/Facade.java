@@ -5,6 +5,7 @@ import com.hhplus.ecommerce.application.service.CartService;
 import com.hhplus.ecommerce.application.service.OrderService;
 import com.hhplus.ecommerce.application.service.ProductService;
 import com.hhplus.ecommerce.application.service.UserService;
+import com.hhplus.ecommerce.domain.order.OrderItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +32,13 @@ public class Facade {
         // 재고 확인
         productService.validateProduct(orderRequest);
         // 주문처리
-        orderService.orderProduct(orderRequest);
+        List<OrderItem> orderItems = orderService.orderProduct(orderRequest);
         // 유저 포인트 차감
         userService.usePoint(orderRequest);
+        // 상품 재고 차감
+        productService.modifyProductQuantity(orderItems);
+        // Data Platform 으로 데이터 전송
+        orderService.sendData(orderRequest);
     }
 
     // 유저 포인트 조회
@@ -61,4 +66,7 @@ public class Facade {
         cartService.updateProductQuantity(cartUpdateRequest);
     }
 
+    public List<TopOrderProduct> getTopOrderProduct() {
+         return orderService.getTopOrderProduct();
+    }
 }

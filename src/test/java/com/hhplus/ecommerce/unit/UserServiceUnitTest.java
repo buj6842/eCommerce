@@ -4,6 +4,7 @@ import com.hhplus.ecommerce.application.dto.OrderItemDTO;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.PointChargeRequest;
 import com.hhplus.ecommerce.application.service.UserService;
+import com.hhplus.ecommerce.config.exception.EcommerceException;
 import com.hhplus.ecommerce.domain.user.User;
 import com.hhplus.ecommerce.infrastructure.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -52,7 +53,7 @@ public class UserServiceUnitTest {
     void 포인트_검증_성공() {
         // 포인트가 충분한 사용자 설정
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1, 100)));
+        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)), 100);
 
         // 포인트 검증
         userService.validatePoint(orderRequest);
@@ -64,17 +65,17 @@ public class UserServiceUnitTest {
     void 포인트_검증_실패() {
         // 포인트가 부족한 요청 설정
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1, 1000000), new OrderItemDTO(2L, 2, 20000000)));
+        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1), new OrderItemDTO(2L, 2)), 30000);
 
         //실행과 동시에 예외 발생인지 확인
-        assertThrows(RuntimeException.class, () -> userService.validatePoint(orderRequest));
+        assertThrows(EcommerceException.class, () -> userService.validatePoint(orderRequest));
     }
 
     @Test
     void 포인트_충전_성공() {
         // 포인트 충전 요청 설정
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1, 100)));
+        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)),100);
 
         // 포인트 충전
         userService.usePoint(orderRequest);
@@ -89,7 +90,7 @@ public class UserServiceUnitTest {
         // 포인트 충전 요청 설정
         PointChargeRequest pointChargeRequest = new PointChargeRequest(1L, -100);
 
-        assertThrows(RuntimeException.class, () -> userService.addPoint(pointChargeRequest));
+        assertThrows(EcommerceException.class, () -> userService.addPoint(pointChargeRequest));
     }
 
 

@@ -41,7 +41,7 @@ public class OrderUnitTest {
     @Test
     void 주문_저장_성공() {
         // Given: 유효한 주문 설정
-        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1, 100)));
+        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)), 100);
         when(orderRepository.save(any(Order.class))).thenReturn(order);
 
         // When: 주문 저장

@@ -2,6 +2,8 @@ package com.hhplus.ecommerce.application.service;
 
 import com.hhplus.ecommerce.application.dto.CartRequest;
 import com.hhplus.ecommerce.application.dto.CartUpdateRequest;
+import com.hhplus.ecommerce.config.exception.EcommerceException;
+import com.hhplus.ecommerce.config.exception.ErrorCode;
 import com.hhplus.ecommerce.domain.cart.Cart;
 import com.hhplus.ecommerce.infrastructure.CartRepository;
 import jakarta.transaction.Transactional;
@@ -35,7 +37,7 @@ public class CartService {
     public void updateProductQuantity(CartUpdateRequest cartUpdateRequest) {
         // 장바구니 상품 수량 변경
         Cart cart = cartRepository.findById(cartUpdateRequest.cartId())
-                .orElseThrow(() -> new RuntimeException("장바구니가 존재하지 않습니다."));
+                .orElseThrow(() -> new EcommerceException(ErrorCode.CART_NOT_FOUND.getCode(), ErrorCode.CART_NOT_FOUND.getMessage()));
 
         cart.updateCart(cartUpdateRequest.productId(), cartUpdateRequest.quantity());
 

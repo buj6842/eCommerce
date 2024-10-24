@@ -2,10 +2,13 @@ package com.hhplus.ecommerce.application.service;
 
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.PointChargeRequest;
+import com.hhplus.ecommerce.config.exception.EcommerceException;
+import com.hhplus.ecommerce.config.exception.ErrorCode;
 import com.hhplus.ecommerce.domain.user.User;
 import com.hhplus.ecommerce.infrastructure.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,16 +19,16 @@ public class UserService {
     // 유저 포인트 충전 전 검증
     @Transactional
     public void validatePoint(OrderRequest orderRequest) {
-        User user = userRepository.findById(orderRequest.userId()).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = userRepository.findById(orderRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
         if (user.getPoints() < orderRequest.totalPrice()) {
-            throw new RuntimeException("사용자의 포인트가 부족합니다. 충전해주세요");
+            throw new EcommerceException(ErrorCode.NOT_ENOUGH_POINT.getCode(),ErrorCode.NOT_ENOUGH_POINT.getMessage());
         }
     }
 
     // 유저 포인트 차감
     @Transactional
     public void usePoint(OrderRequest orderRequest) {
-        User user = userRepository.findById(orderRequest.userId()).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = userRepository.findById(orderRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
         user.usePoints(orderRequest.totalPrice());
         userRepository.save(user);
     }
@@ -34,7 +37,7 @@ public class UserService {
     @Transactional
     public void addPoint(PointChargeRequest pointChargeRequest) {
         pointChargeRequest.validate();
-        User user = userRepository.findById(pointChargeRequest.userId()).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = userRepository.findById(pointChargeRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
         user.addPoints(pointChargeRequest.points());
         userRepository.save(user);
     }
@@ -42,7 +45,7 @@ public class UserService {
     // 유저 포인트 조회
     @Transactional
     public Integer getPoint(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
         return user.getPoints();
     }
 }

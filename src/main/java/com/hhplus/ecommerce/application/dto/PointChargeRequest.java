@@ -1,5 +1,9 @@
 package com.hhplus.ecommerce.application.dto;
 
+import com.hhplus.ecommerce.config.exception.EcommerceException;
+import com.hhplus.ecommerce.config.exception.ErrorCode;
+import org.springframework.http.HttpStatus;
+
 public record PointChargeRequest(
         Long userId,
         Integer points
@@ -7,7 +11,7 @@ public record PointChargeRequest(
 
     public void validate() {
         if (points < 0) {
-            throw new RuntimeException("충전할 포인트는 0 이상이어야 합니다.");
+            throw new EcommerceException(ErrorCode.INVALID_CHARGE_POINT_INPUT.getCode(), ErrorCode.INVALID_CHARGE_POINT_INPUT.getMessage());
         }
     }
 }

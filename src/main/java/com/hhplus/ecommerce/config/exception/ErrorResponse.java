@@ -1,7 +1,7 @@
 package com.hhplus.ecommerce.config.exception;
 
 public record ErrorResponse(
-        String code,
+        int code,
         String message
 ) {
 }
