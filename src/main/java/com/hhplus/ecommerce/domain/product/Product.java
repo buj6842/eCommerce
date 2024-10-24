@@ -1,17 +1,18 @@
-package com.hhplus.ecommerce.domain;
+package com.hhplus.ecommerce.domain.product;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@DynamicUpdate
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +27,10 @@ public class Product {
         this.productName = productName;
         this.price = price;
         this.productQuantity = productQuantity;
+    }
+
+    public void minusQuantity(Integer quantity) {
+        this.productQuantity -= quantity;
     }
 }
 

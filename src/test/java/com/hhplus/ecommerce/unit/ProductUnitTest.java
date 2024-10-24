@@ -1,10 +1,11 @@
-package com.hhplus.ecommerce;
+package com.hhplus.ecommerce.unit;
 
 import com.hhplus.ecommerce.application.dto.OrderItemDTO;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.ProductDto;
 import com.hhplus.ecommerce.application.service.ProductService;
-import com.hhplus.ecommerce.domain.Product;
+import com.hhplus.ecommerce.config.exception.EcommerceException;
+import com.hhplus.ecommerce.domain.product.Product;
 import com.hhplus.ecommerce.infrastructure.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,7 @@ public class ProductUnitTest {
     void 제품_재고_정상_실행() {
         // 충분한 재고가 있는 제품 설정
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1, 100)));
+        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)), 100);
 
         // 제품 검증
         productService.validateProduct(orderRequest);
@@ -76,9 +77,9 @@ public class ProductUnitTest {
     void 재고_검증_재고가_부족할_때_테스트() {
         // 재고가 부족하도록 설정
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 20, 100)));
+        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 20)), 100);
 
         //예외가 발생했는지 확인
-        assertThrows(RuntimeException.class, () -> productService.validateProduct(orderRequest));
+        assertThrows(EcommerceException.class, () -> productService.validateProduct(orderRequest));
     }
 }

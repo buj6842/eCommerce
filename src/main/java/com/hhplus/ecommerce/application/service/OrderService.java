@@ -1,11 +1,12 @@
 package com.hhplus.ecommerce.application.service;
 
-import com.hhplus.ecommerce.application.dto.OrderItemDTO;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
-import com.hhplus.ecommerce.domain.Order;
-import com.hhplus.ecommerce.domain.OrderItem;
+import com.hhplus.ecommerce.application.dto.TopOrderProduct;
+import com.hhplus.ecommerce.domain.order.Order;
+import com.hhplus.ecommerce.domain.order.OrderItem;
 import com.hhplus.ecommerce.infrastructure.OrderItemRepository;
 import com.hhplus.ecommerce.infrastructure.OrderRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,32 +21,38 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
 
     // 주문처리
-    public void orderProduct(OrderRequest orderRequest) {
-        Integer totalPrice = orderRequest.orderItems().stream()
-                .mapToInt(orderItem -> orderItem.price() * orderItem.quantity())
-                .sum();
+    @Transactional
+    public  List<OrderItem> orderProduct(OrderRequest orderRequest) {
         // 주문처리 builder 패턴으로
         Order order = Order.builder()
                 .userId(orderRequest.userId())
                 .orderDate(LocalDateTime.now())
-                .totalPrice(totalPrice)
+                .totalPrice(orderRequest.totalPrice())
                 .build();
 
-        order = orderRepository.save(order);
-
-        // 주문상품 처리
-        // OrderItems 생성 및 저장
-        Order saveOrder = order;
+        Order saveOrder = orderRepository.save(order);
         List<OrderItem> orderItems = orderRequest.orderItems().stream()
                 .map(orderItemDTO -> OrderItem.builder()
-                        .order(saveOrder)
+                        .orderId(saveOrder.getOrderId())
                         .productId(orderItemDTO.productId())
                         .quantity(orderItemDTO.quantity())
-                        .price(orderItemDTO.price())
+                        .orderDate(saveOrder.getOrderDate())
                         .build())
                 .collect(Collectors.toList());
 
-        orderItemRepository.saveAll(orderItems);
+        return orderItemRepository.saveAll(orderItems);
+    }
+
+    // Data Platform 으로 데이터 전송
+    public void sendData(OrderRequest orderRequest) {
+        // TODO : Data Platform 으로 데이터 전송
+    }
+
+    // 3일간 주문량이 많았던 상품 5개 조회
+    public List<TopOrderProduct> getTopOrderProduct() {
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusDays(3);
+        return orderItemRepository.findTopOrderProduct(startDate,endDate);
     }
 
 }

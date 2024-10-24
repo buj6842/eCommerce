@@ -75,12 +75,7 @@ erDiagram
     
     CART {
         Long cartId PK
-        Long userId FK
-    }
-
-    CART_ITEM {
-        Long cartItemId PK
-        Long cartId
+        Long userId
         Long productId
         Integer quantity
     }

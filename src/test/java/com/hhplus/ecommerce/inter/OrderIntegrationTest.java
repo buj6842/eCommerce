@@ -1,4 +1,4 @@
-package com.hhplus.ecommerce;
+package com.hhplus.ecommerce.inter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplus.ecommerce.application.dto.OrderItemDTO;
@@ -37,13 +37,13 @@ public class OrderIntegrationTest {
     @BeforeEach
     void setUp() {
         // 주문 요청
-        orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1, 1000)));
+        orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)), 1000);
 
         // 재고가 부족한 상품 주문 요청
-        failedOrderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(2L, 1, 5000)));
+        failedOrderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(2L, 1)), 1000);
 
         // 포인트가 부족한 주문 요청
-        notEnoughPointsOrderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 500, 1000)));
+        notEnoughPointsOrderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 500)), 1000);
     }
 
     @Test
