@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product , Long> {
 
-
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Product> findById(Long productId);
 
     Product findByProductName(String productName);

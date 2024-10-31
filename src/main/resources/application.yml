@@ -18,7 +18,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
   data:
     redis:
-      port: 6367
+      port: 6379
       host: localhost
   kafka:
     bootstrap-servers: localhost:9092
