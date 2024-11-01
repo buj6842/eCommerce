@@ -9,12 +9,14 @@ import com.hhplus.ecommerce.domain.user.User;
 import com.hhplus.ecommerce.infrastructure.OrderRepository;
 import com.hhplus.ecommerce.infrastructure.ProductRepository;
 import com.hhplus.ecommerce.infrastructure.UserRepository;
-import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class DataBaseConcurrencyControlTest {
     @Autowired
     private Facade facade;
@@ -39,31 +42,10 @@ public class DataBaseConcurrencyControlTest {
     @Autowired
     private UserRepository userRepository;
 
-    private User user;
-
-
-    @BeforeEach
-    void setUp() {
-        // Mock 데이터를 미리 설정
-        user = new User(null, "테스터", 500000000, LocalDateTime.now());
-        userRepository.save(user);
-
-        // Product 데이터 설정
-        Product product1 = new Product(null, "갤럭시s24", 5000, 500);
-        Product product2 = new Product(null, "아이폰17", 100000, 200);
-        Product product3 = new Product(null, "아이패드", 50000, 100);
-        Product product4 = new Product(null, "갤럭시탭", 800000, 3000);
-        productRepository.save(product1);
-        productRepository.save(product2);
-        productRepository.save(product3);
-        productRepository.save(product4);
-    }
-
-
     @Test
     @Transactional
     void 동시성_테스트_DB_Lock() throws InterruptedException {
-        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)), 100);
+        OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)), 5000);
 
         long startTime = System.currentTimeMillis();
 
@@ -86,7 +68,7 @@ public class DataBaseConcurrencyControlTest {
         System.out.println("실행 시간: " + (endTime - startTime) + "ms");
 
         // order 테이블 검증
-        List<Order> orders = orderRepository.findByUserId(user.getUserId());
+        List<Order> orders = orderRepository.findByUserId(1L);
         assertEquals(10, orders.size(), "오더 개수 10");
 
         // product 테이블 검증
@@ -94,7 +76,7 @@ public class DataBaseConcurrencyControlTest {
         assertEquals(490, product.getProductQuantity(), "상품 재고 작성");
 
         // user 테이블 검증
-        User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
-        assertEquals(499999000, updatedUser.getPoints(), "유저의 포인트 499999000");
+        User updatedUser = userRepository.findById(1L).orElseThrow();
+        assertEquals(499950000, updatedUser.getPoints(), "유저의 포인트 499999000");
     }
 }

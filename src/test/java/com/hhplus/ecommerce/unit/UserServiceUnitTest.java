@@ -33,13 +33,12 @@ public class UserServiceUnitTest {
     @InjectMocks
     private UserService userService;
 
-    private User user;
+    // Mock 데이터를 미리 설정
+    private User user = new User(null, "변의진", 10000, LocalDateTime.now());
 
     @BeforeEach
     void setUp() {
-        // Mock 데이터를 미리 설정
-      user = new User(null, "변의진", 10000, LocalDateTime.now());
-      userRepository.save(user);
+        userRepository.save(user);
 
     }
 

@@ -22,6 +22,7 @@ public class Product {
     private Integer productQuantity;
 
 
+
     public Product(Long productId, String productName, Integer price, Integer productQuantity) {
         this.productId = productId;
         this.productName = productName;

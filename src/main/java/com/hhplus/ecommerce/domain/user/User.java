@@ -1,9 +1,6 @@
 package com.hhplus.ecommerce.domain.user;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -11,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicUpdate
 public class User {
@@ -23,6 +19,8 @@ public class User {
     private Integer points;
     private LocalDateTime updatedAt;
 
+
+
     public void addPoints(Integer points) {
         this.points += points;
         this.updatedAt = LocalDateTime.now();
@@ -31,5 +29,12 @@ public class User {
     public void usePoints(Integer points) {
         this.points -= points;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public User(Long userId, String name, Integer points, LocalDateTime updatedAt) {
+        this.userId = userId;
+        this.name = name;
+        this.points = points;
+        this.updatedAt = updatedAt;
     }
 }

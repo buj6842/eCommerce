@@ -6,7 +6,10 @@ import com.hhplus.ecommerce.application.service.OrderService;
 import com.hhplus.ecommerce.application.service.ProductService;
 import com.hhplus.ecommerce.application.service.UserService;
 import com.hhplus.ecommerce.domain.order.OrderItem;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,17 +29,17 @@ public class Facade {
     }
 
     // 상품 주문
+
     public void orderProduct(OrderRequest orderRequest) {
         // 유저 포인트 조회 및 주문전체 금액과 비교
         userService.validatePoint(orderRequest);
-        // 재고 확인
+        // 재고 확인 및 재고 차감
         productService.validateProduct(orderRequest);
-        // 주문처리
-        List<OrderItem> orderItems = orderService.orderProduct(orderRequest);
         // 유저 포인트 차감
         userService.usePoint(orderRequest);
-        // 상품 재고 차감
-        productService.modifyProductQuantity(orderItems);
+        // 주문처리
+        List<OrderItem> orderItems = orderService.orderProduct(orderRequest);
+
         // Data Platform 으로 데이터 전송
         orderService.sendData(orderRequest);
     }

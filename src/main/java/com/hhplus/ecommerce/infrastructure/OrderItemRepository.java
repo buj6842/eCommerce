@@ -2,7 +2,7 @@ package com.hhplus.ecommerce.infrastructure;
 
 import com.hhplus.ecommerce.application.dto.TopOrderProduct;
 import com.hhplus.ecommerce.domain.order.OrderItem;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
