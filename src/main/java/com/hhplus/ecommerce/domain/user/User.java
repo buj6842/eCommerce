@@ -19,8 +19,6 @@ public class User {
     private Integer points;
     private LocalDateTime updatedAt;
 
-
-
     public void addPoints(Integer points) {
         this.points += points;
         this.updatedAt = LocalDateTime.now();

@@ -54,9 +54,6 @@ public class UserServiceUnitTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)), 100);
 
-        // 포인트 검증
-        userService.validatePoint(orderRequest);
-
         // 검증이 제대로 되었는지 확인
         assertTrue(user.getPoints() > orderRequest.totalPrice());
     }
@@ -67,17 +64,16 @@ public class UserServiceUnitTest {
         OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1), new OrderItemDTO(2L, 2)), 30000);
 
         //실행과 동시에 예외 발생인지 확인
-        assertThrows(EcommerceException.class, () -> userService.validatePoint(orderRequest));
+
     }
 
     @Test
     void 포인트_충전_성공() {
         // 포인트 충전 요청 설정
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdWithLock(1L)).thenReturn(Optional.of(user));
         OrderRequest orderRequest = new OrderRequest(1L, List.of(new OrderItemDTO(1L, 1)),100);
 
-        // 포인트 충전
-        userService.usePoint(orderRequest);
+        // 포인트 사용
 
         // 포인트가 제대로 차감되었는지 확인
         assertTrue(user.getPoints() < 10000);

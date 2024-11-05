@@ -9,6 +9,7 @@ import com.hhplus.ecommerce.domain.user.User;
 import com.hhplus.ecommerce.infrastructure.OrderRepository;
 import com.hhplus.ecommerce.infrastructure.ProductRepository;
 import com.hhplus.ecommerce.infrastructure.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RLock;
@@ -48,14 +49,20 @@ public class RedisConcurrencyControlTest {
 
     private User user;
 
+    Product product1;
+
     @BeforeEach
     void setUp() {
+        orderRepository.deleteAll();
+        productRepository.deleteAll();
+        userRepository.deleteAll();
+
         // Mock 데이터를 미리 설정
         user = new User(null, "테스터", 500000000, LocalDateTime.now());
         userRepository.save(user);
 
         // Product 데이터 설정
-        Product product1 = new Product(null, "갤럭시s24", 5000, 500);
+        product1 = new Product(null, "갤럭시s24", 5000, 500);
         Product product2 = new Product(null, "아이폰17", 100000, 200);
         Product product3 = new Product(null, "아이패드", 50000, 100);
         Product product4 = new Product(null, "갤럭시탭", 800000, 3000);
@@ -67,21 +74,17 @@ public class RedisConcurrencyControlTest {
 
     @Test
     void 동시성_테스트_Redis_Lock() throws InterruptedException {
-        OrderRequest orderRequest = new OrderRequest(user.getUserId(), List.of(new OrderItemDTO(1L, 1)), 100);
-        RLock lock = redissonClient.getLock("orderProductLock");
+        OrderRequest orderRequest = new OrderRequest(user.getUserId(), List.of(new OrderItemDTO(product1.getProductId(), 1)), 100);
 
         long startTime = System.currentTimeMillis();
 
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         for (int i = 0; i < 10; i++) {
             executorService.submit(() -> {
-                lock.lock();
                 try {
                     facade.orderProduct(orderRequest);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
-                } finally {
-                    lock.unlock();
                 }
             });
         }
@@ -104,4 +107,11 @@ public class RedisConcurrencyControlTest {
         User updatedUser = userRepository.findById(user.getUserId()).orElseThrow();
         assertEquals(499999000, updatedUser.getPoints(), "유저의 포인트 499999000");
     }
+
+//    @AfterEach
+//    void tearDown() {
+//        orderRepository.deleteAll();
+//        productRepository.deleteAll();
+//        userRepository.deleteAll();
+//    }
 }

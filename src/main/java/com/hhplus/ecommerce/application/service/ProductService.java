@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
-    private final RedissonClient redissonClient;
 
     @Transactional
     public List<ProductDto> getAllProducts() {
@@ -38,7 +37,6 @@ public class ProductService {
     }
 
     // 검증후 상품 재고 차감
-    @Transactional
     public void validateProduct(OrderRequest orderRequest) {
         for (OrderItemDTO item : orderRequest.orderItems()) {
             Product product = productRepository.findByIdWithLock(item.productId())

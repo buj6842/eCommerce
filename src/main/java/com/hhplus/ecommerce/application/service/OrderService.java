@@ -22,7 +22,6 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
 
     // 주문처리
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public  List<OrderItem> orderProduct(OrderRequest orderRequest) {
         // 주문처리 builder 패턴으로
         Order order = Order.builder()
