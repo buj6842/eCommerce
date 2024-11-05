@@ -51,4 +51,16 @@ public class OrderUnitTest {
         verify(orderRepository, times(1)).save(any(Order.class));
         verify(orderItemRepository, times(1)).saveAll(anyList());
     }
+
+    @Test
+    void 상위_상품_조회_성공(){
+        // Given: 상위 상품 조회
+        when(orderItemRepository.findTopOrderProduct(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(null);
+
+        // When: 상위 상품 조회
+        orderService.getTopOrderProduct();
+
+        // Then: 상위 상품 조회 성공
+        verify(orderItemRepository, times(1)).findTopOrderProduct(any(LocalDateTime.class), any(LocalDateTime.class));
+    }
 }

@@ -4,9 +4,10 @@ import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.PointChargeRequest;
 import com.hhplus.ecommerce.config.exception.EcommerceException;
 import com.hhplus.ecommerce.config.exception.ErrorCode;
+import com.hhplus.ecommerce.domain.order.Order;
 import com.hhplus.ecommerce.domain.user.User;
 import com.hhplus.ecommerce.infrastructure.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,27 +18,22 @@ public class UserService {
     private final UserRepository userRepository;
 
     // 유저 포인트 충전 전 검증
-    @Transactional
-    public void validatePoint(OrderRequest orderRequest) {
-        User user = userRepository.findById(orderRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
+
+    public void validateAndUsePoint(OrderRequest orderRequest) {
+        User user = userRepository.findByIdWithLock(orderRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
         if (user.getPoints() < orderRequest.totalPrice()) {
             throw new EcommerceException(ErrorCode.NOT_ENOUGH_POINT.getCode(),ErrorCode.NOT_ENOUGH_POINT.getMessage());
+        } else {
+            user.usePoints(orderRequest.totalPrice());
+            userRepository.save(user);
         }
-    }
-
-    // 유저 포인트 차감
-    @Transactional
-    public void usePoint(OrderRequest orderRequest) {
-        User user = userRepository.findById(orderRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
-        user.usePoints(orderRequest.totalPrice());
-        userRepository.save(user);
     }
 
     // 유저 포인트 추가
     @Transactional
     public void addPoint(PointChargeRequest pointChargeRequest) {
         pointChargeRequest.validate();
-        User user = userRepository.findById(pointChargeRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
+        User user = userRepository.findByIdWithLock(pointChargeRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
         user.addPoints(pointChargeRequest.points());
         userRepository.save(user);
     }

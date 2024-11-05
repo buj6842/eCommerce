@@ -6,7 +6,8 @@ import com.hhplus.ecommerce.config.exception.EcommerceException;
 import com.hhplus.ecommerce.config.exception.ErrorCode;
 import com.hhplus.ecommerce.domain.cart.Cart;
 import com.hhplus.ecommerce.infrastructure.CartRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

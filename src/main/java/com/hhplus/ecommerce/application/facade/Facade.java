@@ -5,11 +5,20 @@ import com.hhplus.ecommerce.application.service.CartService;
 import com.hhplus.ecommerce.application.service.OrderService;
 import com.hhplus.ecommerce.application.service.ProductService;
 import com.hhplus.ecommerce.application.service.UserService;
+import com.hhplus.ecommerce.domain.order.Order;
 import com.hhplus.ecommerce.domain.order.OrderItem;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +28,8 @@ public class Facade {
     private final UserService userService;
     private final OrderService orderService;
     private final CartService cartService;
+    private final RedissonClient redissonClient;
+
 
     // 상품 조회
     public List<ProductDto> getAllProducts() {
@@ -26,18 +37,12 @@ public class Facade {
     }
 
     // 상품 주문
+
+    @Transactional
     public void orderProduct(OrderRequest orderRequest) {
-        // 유저 포인트 조회 및 주문전체 금액과 비교
-        userService.validatePoint(orderRequest);
-        // 재고 확인
         productService.validateProduct(orderRequest);
-        // 주문처리
+        userService.validateAndUsePoint(orderRequest);
         List<OrderItem> orderItems = orderService.orderProduct(orderRequest);
-        // 유저 포인트 차감
-        userService.usePoint(orderRequest);
-        // 상품 재고 차감
-        productService.modifyProductQuantity(orderItems);
-        // Data Platform 으로 데이터 전송
         orderService.sendData(orderRequest);
     }
 
@@ -67,6 +72,6 @@ public class Facade {
     }
 
     public List<TopOrderProduct> getTopOrderProduct() {
-         return orderService.getTopOrderProduct();
+        return orderService.getTopOrderProduct();
     }
 }

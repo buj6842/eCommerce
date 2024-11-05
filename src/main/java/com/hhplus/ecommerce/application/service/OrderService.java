@@ -6,9 +6,10 @@ import com.hhplus.ecommerce.domain.order.Order;
 import com.hhplus.ecommerce.domain.order.OrderItem;
 import com.hhplus.ecommerce.infrastructure.OrderItemRepository;
 import com.hhplus.ecommerce.infrastructure.OrderRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +22,6 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
 
     // 주문처리
-    @Transactional
     public  List<OrderItem> orderProduct(OrderRequest orderRequest) {
         // 주문처리 builder 패턴으로
         Order order = Order.builder()
