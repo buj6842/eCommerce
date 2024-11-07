@@ -1,4 +1,4 @@
-package com.hhplus.ecommerce.config;
+package com.hhplus.ecommerce.config.redis;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/order")
 @RequiredArgsConstructor
 public class OrderController {
     private final Facade facade;
 
 
-    @PostMapping("/order")
+    @PostMapping
     @Operation(summary = "상품 주문")
     public ResponseEntity<String> placeOrder(@RequestBody OrderRequest orderRequest) {
         try {
@@ -30,7 +30,7 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/top-order")
+    @GetMapping("/popular")
     @Operation(summary = "상위 주문 조회")
     public List<TopOrderProduct> getTopOrder() {
         return facade.getTopOrderProduct();

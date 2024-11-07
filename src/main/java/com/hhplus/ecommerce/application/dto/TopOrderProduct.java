@@ -1,8 +1,15 @@
 package com.hhplus.ecommerce.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record TopOrderProduct(
-        Long productId,
-        String name,
-        Long salesQuantity
+        @JsonProperty("productId") Long productId,
+        @JsonProperty("name") String name,
+        @JsonProperty("salesQuantity") Long salesQuantity
 ) {
+    @JsonCreator
+    public TopOrderProduct {
+
+    }
 }
