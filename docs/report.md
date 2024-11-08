@@ -92,9 +92,7 @@ sequenceDiagram
 
 ### 6. 테스트 결과
 
-테스트는 Jmeter를 이용하여 진행하였습니다.
-![스크린샷 2024-11-07 21.43.38.png](../../../../var/folders/hr/zcln0scj3rsbr99y6ndr8nsh0000gn/T/TemporaryItems/NSIRD_screencaptureui_HvCdnl/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202024-11-07%2021.43.38.png)
-테스트 환경은 이렇게 설정하였습니다
+테스트는 Jmeter를 이용하여 진행하였고 , 테스트 환경은 이렇게 설정하였습니다
 사용자(스레드) 수 : 4000
 Ram-Up 시간 : 10초
 
