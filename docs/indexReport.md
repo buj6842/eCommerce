@@ -62,7 +62,20 @@ product 테이블에서는 product_id와 product_name을 사용하고 있기 때
 
 분명 속도적으로 개선이 되었으나(1440 > 440) 실행계획을 보았을 때
 아직 index 조회를 이루어지지 않은 부분이 있다보니 완벽한 개선이라고 하기에는 조금 모자란 부분이있었습니다.
-이를 해결하기위해 인덱스를 추가로 적용하였습니다.
+Explain analyze를 통해 쿼리 실행계획을 확인해보았을 때
+```sql
+-> Limit: 5 row(s)  (actual time=159..159 rows=0 loops=1)
+    -> Sort: quantity DESC, limit input to 5 row(s) per chunk  (actual time=159..159 rows=0 loops=1)
+        -> Table scan on <temporary>  (actual time=159..159 rows=0 loops=1)
+            -> Aggregate using temporary table  (actual time=159..159 rows=0 loops=1)
+                -> Nested loop inner join  (cost=14541 rows=31725) (actual time=159..159 rows=0 loops=1)
+                    -> Filter: ((oi.order_date between <cache>((now() - interval 3 day)) and <cache>(now())) and (oi.product_id is not null))  (cost=3437 rows=31725) (actual time=159..159 rows=0 loops=1)
+                        -> Table scan on oi  (cost=3437 rows=285558) (actual time=0.131..125 rows=286466 loops=1)
+                    -> Single-row index lookup on p using PRIMARY (product_id=oi.product_id)  (cost=0.25 rows=1) (never executed)
+
+```
+order_item 테이블에서 order_date를 조회하는 부분에서 index를 조회하지 않고 있어서
+이부분을 개선하기위해 추가적인 인덱스를 적용하였습니다.
 
 ```sql
 CREATE INDEX idx_order_item_product_date_quantity
@@ -77,3 +90,22 @@ CREATE INDEX idx_order_item_product_date_quantity
 
 해당 쿼리가 실행되는 과정에서 index를 조회하도록 변경하니
 성능이 조금 더 개선이 된 부분을 확인할수 있습니다. (440 > 289)
+
+explain analyze를 통해 쿼리 실행계획을 확인해보았을 때
+```sql
+-> Limit: 5 row(s)  (actual time=123..123 rows=0 loops=1)
+    -> Sort: quantity DESC, limit input to 5 row(s) per chunk  (actual time=123..123 rows=0 loops=1)
+        -> Stream results  (cost=21851 rows=5) (actual time=123..123 rows=0 loops=1)
+            -> Group aggregate: sum(oi.quantity)  (cost=21851 rows=5) (actual time=123..123 rows=0 loops=1)
+                -> Nested loop inner join  (cost=14541 rows=31725) (actual time=123..123 rows=0 loops=1)
+                    -> Filter: ((oi.order_date between <cache>((now() - interval 3 day)) and <cache>(now())) and (oi.product_id is not null))  (cost=3437 rows=31725) (actual time=123..123 rows=0 loops=1)
+                        -> Covering index scan on oi using idx_order_item_product_date_quantity  (cost=3437 rows=285558) (actual time=0.134..92.9 rows=286466 loops=1)
+                    -> Single-row index lookup on p using PRIMARY (product_id=oi.product_id)  (cost=0.25 rows=1) (never executed)
+```
+order_item 테이블에서 order_date를 조회하는 부분에서 index를 조회하도록 변경하였고
+성능이 개선된것을 확인할 수 있습니다.
+
+##### 마치며
+index 를 어떤 컬럼에 걸어야할까? 라는 질문을 받으면 한번에 답을 할순 없을것 같습니다.
+하지만 STEP15를 통해 Optimizer를 통해 쿼리를 실행계획을 확인하고
+개선을 해 나가는 방법을 좀더 이해하면 앞으로 더 좋은 쿼리성능을 확보할수 있지 않을까 라는 생각이 들었습니다.
