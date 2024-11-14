@@ -89,12 +89,22 @@ Split by Layer, Package by Feature 원칙으로 패키지를 구성하여 채워
 기술 스택은 다음과 같습니다.
 - Spring Boot
 - JPA
-- MYSQL(사용 예정)
+- MYSQL
 - Gradle
 - Junit5
 - Mockito
+- REDIS
 - Swagger
 - Kafka(사용 예정)
 
 Swagger 사용관련 문서입니다.
 - [Swagger](docs/Swagger.md)
+
+Cache 사용으로 성능 개선 보고서입니다.
+- [Cache 사용](docs/report.md)
+
+인덱스 적용 및 분석 보고서입니다.
+-[인덱스 적용 및 분석](docs/indexReport.md)
+
+트랜잭션 분리에 관한 설계서입니다.
+-[트랜잭션 분리](docs/TransactionReport.md)
