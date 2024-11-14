@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,6 @@ public class Facade {
     private final UserService userService;
     private final OrderService orderService;
     private final CartService cartService;
-    private final RedissonClient redissonClient;
 
 
     // 상품 조회
@@ -74,4 +74,5 @@ public class Facade {
     public List<TopOrderProduct> getTopOrderProduct() {
         return orderService.getTopOrderProduct();
     }
+
 }

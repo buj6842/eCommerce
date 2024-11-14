@@ -1,5 +1,7 @@
 package com.hhplus.ecommerce.application.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.TopOrderProduct;
 import com.hhplus.ecommerce.domain.order.Order;
@@ -7,12 +9,12 @@ import com.hhplus.ecommerce.domain.order.OrderItem;
 import com.hhplus.ecommerce.infrastructure.OrderItemRepository;
 import com.hhplus.ecommerce.infrastructure.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +22,9 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String TOP_ORDER_PRODUCT_CACHE_KEY = "topOrderProduct";
 
     // 주문처리
     public  List<OrderItem> orderProduct(OrderRequest orderRequest) {
@@ -48,11 +53,21 @@ public class OrderService {
         // TODO : Data Platform 으로 데이터 전송
     }
 
-    // 3일간 주문량이 많았던 상품 5개 조회
     public List<TopOrderProduct> getTopOrderProduct() {
+
+        Object data = redisTemplate.opsForValue().get(TOP_ORDER_PRODUCT_CACHE_KEY);
+
+        if (data != null) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.convertValue(data, new TypeReference<List<TopOrderProduct>>() {
+            });
+        }
+
         LocalDateTime endDate = LocalDateTime.now();
         LocalDateTime startDate = endDate.minusDays(3);
-        return orderItemRepository.findTopOrderProduct(startDate,endDate);
-    }
+        List<TopOrderProduct> topOrderProducts = orderItemRepository.findTopOrderProduct(startDate, endDate);
 
+        redisTemplate.opsForValue().set(TOP_ORDER_PRODUCT_CACHE_KEY, topOrderProducts, 600, TimeUnit.SECONDS);
+        return topOrderProducts;
+    }
 }
