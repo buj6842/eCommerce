@@ -1,23 +1,19 @@
 package com.hhplus.ecommerce.application.facade;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplus.ecommerce.application.dto.*;
 import com.hhplus.ecommerce.application.event.OrderEvent;
 import com.hhplus.ecommerce.application.service.CartService;
 import com.hhplus.ecommerce.application.service.OrderService;
 import com.hhplus.ecommerce.application.service.ProductService;
 import com.hhplus.ecommerce.application.service.UserService;
-import com.hhplus.ecommerce.domain.order.Order;
-import com.hhplus.ecommerce.domain.order.OrderItem;
-import jakarta.persistence.OptimisticLockException;
+import com.hhplus.ecommerce.domain.outbox.OutboxEvent;
+import com.hhplus.ecommerce.infrastructure.OutBoxEventRepository;
+import com.hhplus.ecommerce.infrastructure.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.Redisson;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +30,8 @@ public class Facade {
     private final OrderService orderService;
     private final CartService cartService;
     private final ApplicationEventPublisher eventPublisher;
+    private final OutBoxEventRepository outBoxEventRepository;
+    private final KafkaProducer kafkaProducer;
 
 
     // 상품 조회
@@ -44,19 +42,20 @@ public class Facade {
     // 상품 주문
 
     @Transactional
-    public void orderProduct(OrderRequest orderRequest) {
-        Long orderId = null;
-        try {
-        productService.validateProduct(orderRequest);
-        userService.validateAndUsePoint(orderRequest);
-        orderId = orderService.orderProduct(orderRequest);
-        orderService.sendData(orderRequest);
+    public void orderProduct(OrderRequest orderRequest) throws JsonProcessingException {
 
-        eventPublisher.publishEvent(new OrderEvent(orderId, "SUCCESS", orderRequest));
-        } catch (Exception e) {
-            eventPublisher.publishEvent(new OrderEvent(orderId, "FAILED", orderRequest));
-        }
+            int totalPrice = productService.getProductTotalPrice(orderRequest);
+            productService.validateProduct(orderRequest);
+            userService.validateAndUsePoint(orderRequest, totalPrice);
+            Long orderId = orderService.orderProduct(orderRequest,totalPrice);
+            OutboxEvent outboxEvent = OutboxEvent.builder()
+                        .status(OutboxEvent.OutboxStatus.INIT)
+                        .payload(toJson(new OrderEvent(orderId,  orderRequest)))
+                        .eventType(OutboxEvent.EventType.ORDER)
+                        .build();
+            outBoxEventRepository.save(outboxEvent);
     }
+
 
     // 유저 포인트 조회
     public Integer getPoint(Long userId) {
@@ -85,6 +84,10 @@ public class Facade {
 
     public List<TopOrderProduct> getTopOrderProduct() {
         return orderService.getTopOrderProduct();
+    }
+
+    public String toJson(Object object) throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(object);
     }
 
 }

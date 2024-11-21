@@ -28,5 +28,9 @@ public class Product {
     public void minusQuantity(Integer quantity) {
         this.productQuantity -= quantity;
     }
+
+    public void plusQuantity(Integer quantity) {
+        this.productQuantity += quantity;
+    }
 }
 
