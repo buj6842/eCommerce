@@ -1,5 +1,6 @@
 package com.hhplus.ecommerce.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hhplus.ecommerce.application.dto.OrderRequest;
 import com.hhplus.ecommerce.application.dto.TopOrderProduct;
 import com.hhplus.ecommerce.application.facade.Facade;
@@ -27,6 +28,8 @@ public class OrderController {
             return ResponseEntity.ok("주문이 정상적으로 완료되었습니다.");
         } catch (EcommerceException e) {
             return ResponseEntity.status(e.getErrorCode()).body(e.getMessage());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
