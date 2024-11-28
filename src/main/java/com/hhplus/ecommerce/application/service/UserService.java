@@ -19,12 +19,12 @@ public class UserService {
 
     // 유저 포인트 충전 전 검증
 
-    public void validateAndUsePoint(OrderRequest orderRequest) {
+    public void validateAndUsePoint(OrderRequest orderRequest, Integer totalPrice) {
         User user = userRepository.findByIdWithLock(orderRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
-        if (user.getPoints() < orderRequest.totalPrice()) {
+        if (user.getPoints() < totalPrice) {
             throw new EcommerceException(ErrorCode.NOT_ENOUGH_POINT.getCode(),ErrorCode.NOT_ENOUGH_POINT.getMessage());
         } else {
-            user.usePoints(orderRequest.totalPrice());
+            user.usePoints(totalPrice);
             userRepository.save(user);
         }
     }
@@ -43,5 +43,13 @@ public class UserService {
     public Integer getPoint(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
         return user.getPoints();
+    }
+
+    // 유저 포인트 롤백
+    @Transactional
+    public void rollbackPoint(OrderRequest orderRequest, int totalPrice) {
+        User user = userRepository.findById(orderRequest.userId()).orElseThrow(() -> new EcommerceException(ErrorCode.USER_NOT_FOUND.getCode(),ErrorCode.USER_NOT_FOUND.getMessage()));
+        user.addPoints(totalPrice);
+        userRepository.save(user);
     }
 }

@@ -8,6 +8,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderEvent {
     private final Long orderId;
-    private final String status; // "SUCCESS" or "FAILED"
     private final OrderRequest orderRequest;
 }

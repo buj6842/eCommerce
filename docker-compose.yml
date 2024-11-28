@@ -1,20 +1,113 @@
-version: '3'
+version: '3.8'
 services:
-  zookeeper:
-    image: wurstmeister/zookeeper:3.4.6
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce-mysql
     ports:
-      - "2181:2181"
+      - "3307:3306"  # 로컬 3307 -> 컨테이너 3306 포트 매핑
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ECommerce
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ecommerce-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M  # 메모리 제한
+          cpus: "0.25"  # CPU 제한
+        reservations:
+          memory: 128M # 최소 메모리 예약
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.1
+    container_name: zookeeper
+    ports:
+      - "2181:2181"  # Zookeeper 포트
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - ecommerce-network
 
   kafka:
-    image: wurstmeister/kafka:2.12-2.3.0
+    image: confluentinc/cp-kafka:7.4.1
+    container_name: kafka
     ports:
-      - "9092:9092"
+      - "9092:9092"  # Kafka 포트
     environment:
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - ecommerce-network
+
+  app:
+    build:
+      context: .
+    container_name: ecommerce-app
+    ports:
+      - "8080:8080"  # 로컬 8080 -> 컨테이너 8080 포트 매핑
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ECommerce
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      - mysql
+      - kafka
+    networks:
+      - ecommerce-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M  # 메모리 제한
+          cpus: "0.5"  # CPU 제한
+        reservations:
+          memory: 256M  # 최소 메모리 예약
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql-exporter
+    environment:
+      DATA_SOURCE_NAME: root:root@(ecommerce-mysql:3306)//  # MySQL 사용자 정보
+    ports:
+      - "9104:9104"  # MySQL Exporter 기본 포트
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"  # Prometheus 기본 포트
+    networks:
+      - ecommerce-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"  # Grafana 기본 포트
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin  # 기본 관리자 사용자
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # 기본 관리자 비밀번호
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - ecommerce-network
+
+volumes:
+  mysql_data:
+  grafana-data:
+
+networks:
+  ecommerce-network:
