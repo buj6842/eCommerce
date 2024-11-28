@@ -13,6 +13,10 @@ java {
     }
 }
 
+bootJar {
+    archiveFileName = 'eCommerce.jar'
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -24,6 +28,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
@@ -38,10 +43,20 @@ dependencies {
     implementation 'org.redisson:redisson-spring-boot-starter:3.16.4'
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
-
+    implementation 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    testImplementation 'org.projectlombok:lombok:1.18.28'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+task buildDocker(type: Exec) {
+    dependsOn bootJar
+    commandLine 'docker', 'build', '-t', 'ecommerce:latest', '.'
 }
