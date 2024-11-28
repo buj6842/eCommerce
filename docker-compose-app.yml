@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce-mysql
+    ports:
+      - "3307:3306" # 로컬 3307 -> 컨테이너 3306 포트 매핑
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ECommerce
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ecommerce-network
+
+  app:
+    build:
+      context: .
+    container_name: ecommerce-app
+    ports:
+      - "8080:8080" # 로컬 8080 -> 컨테이너 8080 포트 매핑
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ECommerce
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce-network
+
+volumes:
+  mysql_data:
+
+networks:
+  ecommerce-network:

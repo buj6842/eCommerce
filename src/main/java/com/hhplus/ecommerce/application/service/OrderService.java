@@ -11,6 +11,7 @@ import com.hhplus.ecommerce.infrastructure.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,12 +28,12 @@ public class OrderService {
     private static final String TOP_ORDER_PRODUCT_CACHE_KEY = "topOrderProduct";
 
     // 주문처리
-    public  List<OrderItem> orderProduct(OrderRequest orderRequest) {
+    public  Long orderProduct(OrderRequest orderRequest, Integer totalPrice) {
         // 주문처리 builder 패턴으로
         Order order = Order.builder()
                 .userId(orderRequest.userId())
                 .orderDate(LocalDateTime.now())
-                .totalPrice(orderRequest.totalPrice())
+                .totalPrice(totalPrice)
                 .build();
 
         Order saveOrder = orderRepository.save(order);
@@ -45,7 +46,7 @@ public class OrderService {
                         .build())
                 .collect(Collectors.toList());
 
-        return orderItemRepository.saveAll(orderItems);
+        return saveOrder.getOrderId();
     }
 
     // Data Platform 으로 데이터 전송
